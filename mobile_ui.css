@@ -1,1 +1,26 @@
-#page_header h1{padding:0;margin:0;font-size:28px; color:#ff0000;}
+@media screen and (min-width:1024px){
+	.zc-pb-content-themes{max-width:430px;margin:0 auto;}
+}
+
+/* ****************************************
+ * 整个 Container 的样式定义
+ **************************************** */
+
+/* 内嵌Report的顶部间距，在Mobile需要干掉 */
+.custom-report .record-container .mobile-card{margin-top:0!important;}
+
+/* 去掉第一个 Box 的顶部下沉 */
+body.zc-mobile .column-container:first-child{padding-top:0!important;}
+
+/***********************************************/
+#page_header{padding:0 10px 5px;}
+#page_header h1{padding:0;margin:0;font-size:28px;}
+#page_header span{padding:0;margin:0;font-size:16px;color:#71717b;}
+
+/***********************************************/
+.loader{
+	width:28px;height:28px;border:3px solid #e5e7eb;border-top-color:#2b7fff;
+	border-radius:50%;animation:spin 0.8s linear infinite;margin:50px auto 0;
+}
+
+@keyframes spin{to{transform:rotate(360deg);}}
