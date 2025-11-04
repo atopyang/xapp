@@ -2,6 +2,12 @@
 	.zc-pb-content-themes{max-width:430px;margin:0 auto;}
 }
 
+/* 把Mobile UI的Header改成浅灰色 */
+body.zc-mobile .zc-mobile-layout .zc-page-embed-header, 
+body.zc-mobile .zc-mobile-layout .inner .page_content_wrapper .zc-page-embed-header{
+	background: #eff0f5 !important;
+}
+
 /* ****************************************
  * 整个 Container 的样式定义
  **************************************** */
