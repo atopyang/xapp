@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voron 控制台 · Mainsail 风格</title>
+  <link rel="stylesheet" href="mobile_ui.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>Voron 2.4 控制台</h1>
+        <span>基于 Mainsail 布局的纯前端控制界面</span>
+      </div>
+      <div class="status-badges">
+        <div class="badge success">● 已连接</div>
+        <div class="badge accent">△ Klipper 0.11</div>
+        <div class="badge warn">热床预热</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card" id="job-card">
+        <h2>打印任务</h2>
+        <div class="subtitle">概览与快速控制</div>
+        <div class="flex-row" style="justify-content:space-between;align-items:center;">
+          <div>
+            <div class="label" style="color:var(--muted);">当前文件</div>
+            <div style="font-size:18px;font-weight:700;">Voron_toolhead_calibration.gcode</div>
+            <div style="color:var(--muted);margin-top:4px;">预计剩余 32 分钟</div>
+          </div>
+          <div class="flex-row">
+            <button class="button secondary" onclick="startJob()">开始</button>
+            <button class="button" onclick="pauseJob()">暂停</button>
+            <button class="button" onclick="resumeJob()">恢复</button>
+            <button class="button danger" onclick="stopJob()">停止</button>
+          </div>
+        </div>
+        <div class="progress" style="margin:14px 0 8px;">
+          <div class="progress-bar" id="job-progress"></div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="label">完成度</div><div class="value" id="progress-label">0%</div></div>
+          <div class="stat"><div class="label">耗时</div><div class="value" id="elapsed-label">00:00</div></div>
+          <div class="stat"><div class="label">剩余</div><div class="value" id="remaining-label">--:--</div></div>
+          <div class="stat"><div class="label">速度</div><div class="value" id="feedrate-label">100%</div></div>
+        </div>
+      </article>
+
+      <article class="card" id="temps-card">
+        <h2>温度面板</h2>
+        <div class="subtitle">喷嘴 &amp; 热床目标值</div>
+        <div class="temp-item">
+          <div class="temp-meta">
+            <span style="color:var(--muted);">喷嘴</span>
+            <span class="temp-current" id="hotend-temp">0°C</span>
+          </div>
+          <div>
+            <div class="input-row">
+              <input type="number" id="hotend-target" value="220" min="0" max="320">°C
+              <button class="button" onclick="setTarget('hotend')">设定</button>
+              <button class="button ghost" onclick="cooldown('hotend')">冷却</button>
+            </div>
+          </div>
+        </div>
+        <div class="temp-item">
+          <div class="temp-meta">
+            <span style="color:var(--muted);">热床</span>
+            <span class="temp-current" id="bed-temp">0°C</span>
+          </div>
+          <div>
+            <div class="input-row">
+              <input type="number" id="bed-target" value="60" min="0" max="150">°C
+              <button class="button" onclick="setTarget('bed')">设定</button>
+              <button class="button ghost" onclick="cooldown('bed')">冷却</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" id="move-card">
+        <h2>运动控制</h2>
+        <div class="subtitle">XYZ 调平与挤出</div>
+        <div class="input-row">
+          <label for="step">步进</label>
+          <select id="step">
+            <option value="0.1">0.1mm</option>
+            <option value="1">1mm</option>
+            <option value="10" selected>10mm</option>
+          </select>
+          <label for="feedrate">速度</label>
+          <select id="feedrate">
+            <option value="60">60mm/s</option>
+            <option value="120" selected>120mm/s</option>
+            <option value="200">200mm/s</option>
+          </select>
+        </div>
+        <div class="axis-pad">
+          <button class="button secondary" onclick="move('y', '+')">Y+</button>
+          <button class="button secondary" onclick="move('z', '+')">Z+</button>
+          <button class="button secondary" onclick="move('x', '+')">X+</button>
+          <button class="button secondary" onclick="move('y', '-')">Y-</button>
+          <button class="button secondary" onclick="home()">Home</button>
+          <button class="button secondary" onclick="move('x', '-')">X-</button>
+          <button class="button secondary" onclick="move('e', '+')">挤出 +</button>
+          <button class="button secondary" onclick="move('z', '-')">Z-</button>
+          <button class="button secondary" onclick="move('e', '-')">回抽 -</button>
+        </div>
+      </article>
+
+      <article class="card" id="macro-card">
+        <h2>宏指令</h2>
+        <div class="subtitle">常用流程一键执行</div>
+        <div id="macro-list"></div>
+        <p class="footer-note">点击宏即发送到打印机，可在 macros 数组中自定义。</p>
+      </article>
+
+      <article class="card" id="file-card">
+        <h2>文件与上传</h2>
+        <div class="subtitle">最近的 G-code 列表</div>
+        <ul class="file-list" id="file-list"></ul>
+        <div class="input-row" style="margin-top:12px;">
+          <input type="file" id="upload" accept=".gcode">
+          <button class="button" onclick="uploadFile()">上传到打印机</button>
+        </div>
+      </article>
+
+      <article class="card" id="console-card">
+        <h2>控制台</h2>
+        <div class="subtitle">发送 M/G 代码并查看实时日志</div>
+        <div class="input-row">
+          <input type="text" id="gcode" placeholder="输入 M112 或 G28 等指令" style="flex:1;min-width:200px;">
+          <button class="button" onclick="sendGcode()">发送</button>
+        </div>
+        <div class="console-log" id="console"></div>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const macros = [
+      { name: '加热 PLA', command: 'SET_HEATER_TEMPERATURE HEATER=extruder TARGET=210; SET_HEATER_TEMPERATURE HEATER=heater_bed TARGET=60' },
+      { name: '喷嘴清洁', command: 'G0 X0 Y0 Z10 F6000; LINE_PURGE' },
+      { name: '准备调平', command: 'G28; QUAD_GANTRY_LEVEL; G0 Z10' },
+      { name: '关闭电机', command: 'M84' }
+    ];
+
+    const files = [
+      { name: 'Voron_toolhead_calibration.gcode', size: '3.4MB', modified: '今天' },
+      { name: 'Benchy_fast.gcode', size: '12.8MB', modified: '昨天' },
+      { name: 'CAN_mount_v5.gcode', size: '7.2MB', modified: '3 天前' }
+    ];
+
+    const state = {
+      progress: 0,
+      elapsed: 0,
+      remaining: 1920,
+      feedrate: 100,
+      temps: { hotend: 25, bed: 25 },
+      targets: { hotend: 220, bed: 60 }
+    };
+
+    function formatTime(seconds){
+      if(seconds < 0) return '--:--';
+      const m = Math.floor(seconds/60).toString().padStart(2,'0');
+      const s = Math.floor(seconds%60).toString().padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    function render(){
+      document.getElementById('job-progress').style.width = `${state.progress}%`;
+      document.getElementById('progress-label').textContent = `${state.progress.toFixed(1)}%`;
+      document.getElementById('elapsed-label').textContent = formatTime(state.elapsed);
+      document.getElementById('remaining-label').textContent = formatTime(state.remaining);
+      document.getElementById('feedrate-label').textContent = `${state.feedrate}%`;
+      document.getElementById('hotend-temp').textContent = `${state.temps.hotend.toFixed(1)}°C`;
+      document.getElementById('bed-temp').textContent = `${state.temps.bed.toFixed(1)}°C`;
+    }
+
+    function log(message){
+      const consoleEl = document.getElementById('console');
+      const time = new Date().toLocaleTimeString();
+      consoleEl.innerHTML = `<div>[${time}] ${message}</div>` + consoleEl.innerHTML;
+    }
+
+    function sendCommand(command){
+      // 在此处替换为实际的后端 API 请求，例如 fetch('/printer/gcode', {method:'POST', body: command})
+      log(`发送: ${command}`);
+    }
+
+    function startJob(){ sendCommand('M24'); }
+    function pauseJob(){ sendCommand('M25'); }
+    function resumeJob(){ sendCommand('RESUME'); }
+    function stopJob(){ sendCommand('M112'); }
+
+    function setTarget(type){
+      const inputId = type === 'hotend' ? 'hotend-target' : 'bed-target';
+      const value = Number(document.getElementById(inputId).value);
+      if(Number.isFinite(value)){
+        state.targets[type] = value;
+        sendCommand(`SET_HEATER_TEMPERATURE HEATER=${type === 'hotend' ? 'extruder' : 'heater_bed'} TARGET=${value}`);
+        log(`${type === 'hotend' ? '喷嘴' : '热床'} 目标设为 ${value}°C`);
+      }
+    }
+
+    function cooldown(type){
+      const heater = type === 'hotend' ? 'extruder' : 'heater_bed';
+      state.targets[type] = 0;
+      sendCommand(`SET_HEATER_TEMPERATURE HEATER=${heater} TARGET=0`);
+      log(`${heater} 进入冷却`);
+    }
+
+    function move(axis, dir){
+      const step = Number(document.getElementById('step').value);
+      const feed = Number(document.getElementById('feedrate').value);
+      const distance = dir === '+' ? step : -step;
+      const command = axis === 'e'
+        ? `G1 E${distance} F${feed * 60}`
+        : `G91\nG1 ${axis.toUpperCase()}${distance} F${feed * 60}\nG90`;
+      sendCommand(command);
+      log(`轴 ${axis.toUpperCase()} 移动 ${distance}mm @ ${feed}mm/s`);
+    }
+
+    function home(){
+      sendCommand('G28');
+      log('执行归零 (HOME)');
+    }
+
+    function sendGcode(){
+      const value = document.getElementById('gcode').value.trim();
+      if(value){
+        sendCommand(value);
+        document.getElementById('gcode').value = '';
+      }
+    }
+
+    function uploadFile(){
+      const fileInput = document.getElementById('upload');
+      const file = fileInput.files[0];
+      if(!file){
+        log('请选择要上传的 .gcode 文件');
+        return;
+      }
+      log(`正在上传 ${file.name} (${(file.size/1024/1024).toFixed(1)}MB)...`);
+      // 将以下 fetch 替换为实际后端上传接口
+      setTimeout(() => {
+        files.unshift({ name: file.name, size: `${(file.size/1024/1024).toFixed(1)}MB`, modified: '刚刚' });
+        renderFiles();
+        log(`${file.name} 上传完成，可立即打印`);
+      }, 800);
+    }
+
+    function renderFiles(){
+      const list = document.getElementById('file-list');
+      list.innerHTML = files
+        .slice(0,6)
+        .map(f => `<li><strong>${f.name}</strong><span>${f.size}</span><br><span style="color:var(--muted);">${f.modified}</span></li>`) 
+        .join('');
+    }
+
+    function renderMacros(){
+      const container = document.getElementById('macro-list');
+      container.innerHTML = macros
+        .map(m => `<div class="macro-chip" onclick="sendCommand('${m.command.replace(/'/g, "\\'")}')">${m.name}</div>`) 
+        .join('');
+    }
+
+    function tick(){
+      state.elapsed += 5;
+      state.progress = Math.min(100, state.progress + 0.25);
+      state.remaining = Math.max(0, state.remaining - 5);
+      // 温度渐近目标值，简单模拟
+      ['hotend','bed'].forEach(type => {
+        const current = state.temps[type];
+        const target = state.targets[type];
+        const delta = (target - current) * 0.08;
+        state.temps[type] = current + delta;
+      });
+      render();
+    }
+
+    render();
+    renderFiles();
+    renderMacros();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
