@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workflow Builder</title>
+  <link rel="stylesheet" href="mobile_ui.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">可视化工作流</p>
+        <h1>拖拽式 Workflow 面板</h1>
+        <p class="subtitle">从节点面板拖入画布，连接数据流，立即预览执行步骤。</p>
+      </div>
+      <div class="header-actions">
+        <button class="ghost" id="btnReset">清空画布</button>
+        <button class="primary" id="btnAutoLayout">自动整理</button>
+      </div>
+    </header>
+
+    <main class="app-grid">
+      <aside class="palette" aria-label="节点面板">
+        <h2>节点</h2>
+        <p class="hint">按住拖拽到右侧画布</p>
+        <div class="palette-list">
+          <button class="palette-item" draggable="true" data-node-type="Trigger">
+            <span class="dot start"></span>
+            <div>
+              <strong>触发器</strong>
+              <small>Webhook / 定时器</small>
+            </div>
+          </button>
+          <button class="palette-item" draggable="true" data-node-type="HTTP Request">
+            <span class="dot api"></span>
+            <div>
+              <strong>HTTP 请求</strong>
+              <small>GET / POST / PUT</small>
+            </div>
+          </button>
+          <button class="palette-item" draggable="true" data-node-type="Data Transform">
+            <span class="dot transform"></span>
+            <div>
+              <strong>数据转换</strong>
+              <small>映射 / 提取</small>
+            </div>
+          </button>
+          <button class="palette-item" draggable="true" data-node-type="Condition">
+            <span class="dot condition"></span>
+            <div>
+              <strong>条件分支</strong>
+              <small>if / else</small>
+            </div>
+          </button>
+          <button class="palette-item" draggable="true" data-node-type="Delay">
+            <span class="dot delay"></span>
+            <div>
+              <strong>延时</strong>
+              <small>等待 / 节流</small>
+            </div>
+          </button>
+          <button class="palette-item" draggable="true" data-node-type="Notifier">
+            <span class="dot notify"></span>
+            <div>
+              <strong>通知</strong>
+              <small>邮件 / IM 推送</small>
+            </div>
+          </button>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <div class="toolbar">
+          <div class="legend">
+            <span class="badge start">Trigger</span>
+            <span class="badge api">API</span>
+            <span class="badge transform">Transform</span>
+            <span class="badge condition">Condition</span>
+            <span class="badge delay">Delay</span>
+            <span class="badge notify">Notify</span>
+          </div>
+          <div class="toolbar-actions">
+            <span class="hint">点击输出点 → 输入点即可连线</span>
+          </div>
+        </div>
+        <div class="canvas-wrapper">
+          <svg class="connection-layer" aria-hidden="true"></svg>
+          <div class="workflow-canvas" id="canvas" tabindex="0"></div>
+          <div class="status" id="status">等待拖拽节点到画布</div>
+        </div>
+      </section>
+
+      <aside class="inspector">
+        <h2>节点详情</h2>
+        <div class="inspector-content" id="inspector">
+          <p class="placeholder">选择节点查看配置</p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="workflow.js"></script>
+</body>
+</html>
