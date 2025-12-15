@@ -8,17 +8,32 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar">
-      <div class="title-block">
-        <h1>Voron 2.4 控制台</h1>
-        <span>基于 Mainsail 布局的纯前端控制界面</span>
+    <header class="studio-bar">
+      <div class="brand">
+        <div class="brand-mark">V</div>
+        <div class="brand-text">
+          <strong>Voron Studio</strong>
+          <span>Modern control for Voron 2.4</span>
+        </div>
       </div>
-      <div class="status-badges">
-        <div class="badge success">● 已连接</div>
-        <div class="badge accent">△ Klipper 0.11</div>
-        <div class="badge warn">热床预热</div>
+      <div class="chip-group">
+        <div class="pill">Voron 2.4</div>
+        <div class="pill accent">Klipper 0.11</div>
+        <div class="pill warn">热床预热</div>
+        <div class="pill success">● 已连接</div>
+      </div>
+      <div class="user-block">
+        <div class="indicator live">LIVE</div>
+        <div class="pill subtle">操作员 · Weaver</div>
       </div>
     </header>
+
+    <nav class="workspace-tabs">
+      <button class="tab active">工作台</button>
+      <button class="tab">校准</button>
+      <button class="tab">监控</button>
+      <button class="tab">维护</button>
+    </nav>
 
     <section class="grid">
       <article class="card" id="job-card">
